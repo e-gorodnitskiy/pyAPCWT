@@ -1,0 +1,8 @@
+#name: pyAPCWT
+channels:
+  - pytorch
+  - defaults
+dependencies:
+  - python
+  - numpy
+
