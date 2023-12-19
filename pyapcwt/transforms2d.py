@@ -90,7 +90,7 @@ class LinearTransform2D(ITransform2D):
 
 
 def make_rotation_matrix2d(angle: float) -> np.matrix:
-    return np.matrix([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
+    return np.matrix(np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]]))
 
 
 class Rotation2D(LinearTransform2D):
@@ -134,12 +134,12 @@ def main():
     v0 = DummyTransform2D(3)
     v1 = DummyTransform2D(2)
     v = v0 * v1
-    vec2d = np.array([[1, 2, 3], [4, 5, 6]])
+    # vec2d = np.array([[1, 2, 3], [4, 5, 6]])
     vec2d1 = np.array([[1, 4], [2, 5], [3, 6]])
     res = v.apply(vec2d1)
     print(res)
 
-    m = np.matrix([[1, 2], [0, 3]])
+    m = np.array([[1, 2], [0, 3]])
 
     vm = np.matmul(m, vec2d1.transpose())  # .transpose()
     print(vm)

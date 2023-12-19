@@ -31,6 +31,26 @@ class TestTranslation2d(unittest.TestCase):
         self.assertTrue((v_expected == vl).all())
 
 
+    def test_inv(self):
+        vecs2d = np.array([[2.5, -1.125], [1.125, 2.5,]])
+
+        t = transforms2d.Translation2D(np.array([-2, 4]))
+        t_inv = t.inv()
+
+        i2t = (t_inv * t).apply(vecs2d)
+        t2i = (t * t_inv ).apply(vecs2d)
+        self.assertTrue( (i2t == t2i).all())
+        self.assertTrue((i2t == vecs2d).all())
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
