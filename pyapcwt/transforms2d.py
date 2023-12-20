@@ -51,7 +51,7 @@ class BasicChainedTransform2D(ITransform2D):
 
 
 class LinearTransform2D(ITransform2D):
-    def __init__(self, matrix: np.matrix, translation: NumpyArray):
+    def __init__(self, matrix: NumpyArray, translation: NumpyArray):
         """
         :param matrix 3x3 in projective format
          R T  here R - 2x2 rotation matrix, T - translation vector
@@ -65,7 +65,7 @@ class LinearTransform2D(ITransform2D):
 
         super().__init__()
 
-        self.__translation = np.array(translation).reshape((2, 1))
+        self.__translation = np.atleast_2d(translation).reshape((2, 1))
         self.__matrix2d = matrix
 
     def apply(self, vec2d: np.ndarray) -> np.ndarray:
@@ -73,12 +73,13 @@ class LinearTransform2D(ITransform2D):
         return np.matmul(self.__matrix2d, vec2d.reshape((2, -1))) + self.__translation
 
     def inv(self) -> ITransform2D:
-        m = np.matrix(np.eye(3))
+        m = np.eye(3)
         m[0:2, 0:2] = self.__matrix2d[0:2, 0:2]
-        m[0:2, 2] = self.__translation
+        # use 2: instead of 2 to save last dimension of m[] (2,1) instead of (2,)
+        m[0:2, 2:] = self.__translation
 
         minv = np.linalg.inv(m)
-        return LinearTransform2D(np.matrix(minv[0:2, 0:2]), minv[0:2, 2])
+        return LinearTransform2D(minv[0:2, 0:2], minv[0:2, 2])
 
     def __mul__(self, other) -> ITransform2D:
         if isinstance(other, LinearTransform2D):
@@ -89,8 +90,8 @@ class LinearTransform2D(ITransform2D):
             return super().__mul__(other)
 
 
-def make_rotation_matrix2d(angle: float) -> np.matrix:
-    return np.matrix(np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]]))
+def make_rotation_matrix2d(angle: float) -> NumpyArray:
+    return np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
 
 
 class Rotation2D(LinearTransform2D):
@@ -105,17 +106,26 @@ class Rotation2D(LinearTransform2D):
             return super().__mul__(other)
 
 
-class Translation2D(LinearTransform2D):
+class Translation2D(ITransform2D):
     def __init__(self, translation: NumpyArray):
         assert translation.size == 2
-        super().__init__(np.matrix(np.eye(2)), translation.reshape((2, -1)))
-        self.__translation = translation
+        super().__init__()
+        self.__translation = np.atleast_2d(translation).reshape((2, 1))
 
     def __mul__(self, other) -> ITransform2D:
         if isinstance(other, Translation2D):
             return Translation2D(self.__translation + other.__translation)
         else:
             return super().__mul__(other)
+
+    def inv(self) -> ITransform2D:
+        return Translation2D(-self.__translation)
+
+    def apply(self, vec2d: NumpyArray) -> NumpyArray:
+        assert vec2d.shape[0] == 2
+        assert vec2d.ndim == 2
+        return vec2d + self.__translation
+
 
 
 class DummyTransform2D(ITransform2D):
