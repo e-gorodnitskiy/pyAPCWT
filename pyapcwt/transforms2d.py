@@ -94,16 +94,22 @@ def make_rotation_matrix2d(angle: float) -> NumpyArray:
     return np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
 
 
-class Rotation2D(LinearTransform2D):
+class Rotation2D(ITransform2D):
     def __init__(self, angle: float):
-        super().__init__(make_rotation_matrix2d(angle), np.zeros((2, 1)))
         self.__angle = angle
+        self.__matrix = make_rotation_matrix2d(angle)
 
     def __mul__(self, other) -> ITransform2D:
         if isinstance(other, Rotation2D):
             return Rotation2D(np.fmod(self.__angle + other.__angle, 2 * np.pi))
         else:
             return super().__mul__(other)
+
+    def inv(self):
+        return Rotation2D(-self.__angle)
+
+    def apply(self, vec2d: NumpyArray) -> NumpyArray:
+        return np.matmul(self.__matrix, vec2d)
 
 
 class Translation2D(ITransform2D):
