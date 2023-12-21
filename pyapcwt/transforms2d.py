@@ -10,7 +10,7 @@ NumpyArray = npt.NDArray[np.float64 | np.float32]
 class ITransform2D(ABC):
 
     def __call__(self, vec2d: NumpyArray) -> NumpyArray:
-        assert vec2d.ndim == 2 or vec2d.ndim == 1
+        assert vec2d.ndim == 2
         assert vec2d.shape[0] == 2
 
         return self.apply(vec2d.reshape((2, -1)))
@@ -125,7 +125,6 @@ class Translation2D(ITransform2D):
         assert vec2d.shape[0] == 2
         assert vec2d.ndim == 2
         return vec2d + self.__translation
-
 
 
 class DummyTransform2D(ITransform2D):
