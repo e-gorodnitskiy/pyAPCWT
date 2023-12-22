@@ -7,7 +7,7 @@ EPSILON_FOR_EXACT_FP64 = 10 * np.finfo(np.float64).eps
 
 
 class TestTranslation2d(unittest.TestCase):
-    def test_neutral_translation(self):
+    def test_neutral(self):
         vec2d = np.array([1, 4]).reshape((2, 1))
         zero_translation = transforms2d.Translation2D(np.array([0, 0]))
         neutral_result = zero_translation(vec2d)
@@ -60,7 +60,7 @@ class TestTranslation2d(unittest.TestCase):
 
 
 class TestRotation2D(unittest.TestCase):
-    def test_neutral_rotation(self):
+    def test_neutral(self):
         vec2d = np.array([1, 4]).reshape((2, 1))
         zero_rotation = transforms2d.Rotation2D(0)
         neutral_result = zero_rotation(vec2d)
@@ -134,6 +134,59 @@ class TestRotation2D(unittest.TestCase):
             np.linalg.norm(vec2d_vectorized_res),
             EPSILON_FOR_EXACT_FP64,
             EPSILON_FOR_EXACT_FP64))
+
+
+class TestUniformScale2d(unittest.TestCase):
+    def test_neutral(self):
+        vec2d = np.array([1, 4]).reshape((2, 1))
+        unit_scale = transforms2d.UniformScale2D(1)
+        neutral_result = unit_scale(vec2d)
+        self.assertTrue((vec2d.reshape(2, -1) == neutral_result).all())
+
+    def test_compose(self):
+        vec2d = np.array([1.5, -0.625]).reshape(2, -1)
+
+        t1 = transforms2d.UniformScale2D(2.5)
+        t2 = transforms2d.UniformScale2D(0.4)
+
+        t = t1 * t2
+        neutral_result = t(vec2d)
+        self.assertTrue((vec2d == neutral_result).all())
+
+        t2 = transforms2d.UniformScale2D(0.2)
+
+        vl = (t1 * t2).apply(vec2d)
+        vr = (t2 * t1).apply(vec2d)
+        v_expected = np.array([0.75, -0.3125]).reshape(2, -1)
+
+        self.assertTrue((vl == vr).all())
+        self.assertTrue((v_expected == vl).all())
+
+    def test_inv(self):
+        vecs2d = np.array([[2.5, -1.125], [1.125, 2.5, ]])
+
+        t = transforms2d.UniformScale2D(4)
+        t_inv = t.inv()
+
+        i2t = (t_inv * t).apply(vecs2d)
+        t2i = (t * t_inv).apply(vecs2d)
+        self.assertTrue((i2t == t2i).all())
+        self.assertTrue((i2t == vecs2d).all())
+
+    def test_apply(self):
+        vec2d = np.array([2.5, -1.125]).reshape((2, 1))
+        vec2d_vectorized = np.array([[2.5, -1.125], [1.125, 2], [-5, 2]])
+
+        t = transforms2d.UniformScale2D(2)
+
+        vec2d_expected = np.array([5, -2.25]).reshape((2, 1))
+        vec2d_vectorized_expected = np.array([[5, -2.25], [2.25, 4], [-10, 4]]).transpose()
+
+        vec2d_res = t.apply(vec2d)
+        vec2d_vectorized_res = t.apply(vec2d_vectorized.transpose())
+
+        self.assertTrue((vec2d_expected == vec2d_res).all())
+        self.assertTrue((vec2d_vectorized_expected == vec2d_vectorized_res).all())
 
 
 if __name__ == '__main__':
