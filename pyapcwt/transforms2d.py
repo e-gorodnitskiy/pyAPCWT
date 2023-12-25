@@ -41,6 +41,9 @@ class BasicChainedTransform2D(ITransform2D):
         super().__init__()
         self.__transforms = transforms
 
+    def __str__(self):
+        return str([str(t) for t in self.__transforms])
+
     @check_dimension_vec2d
     def apply(self, vec2d: np.ndarray) -> np.ndarray:
         res = vec2d.copy()
@@ -103,6 +106,13 @@ def make_rotation_matrix2d(angle: float) -> NumpyArray:
     return np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
 
 
+def make_lorentz_rotation_matrix2d(rapidity: float) -> NumpyArray:
+    return np.array(
+        [[np.cosh(rapidity), np.sinh(rapidity)],
+         [np.sinh(rapidity), np.cosh(rapidity)]]
+    )
+
+
 class Rotation2D(ITransform2D):
     def __init__(self, angle: float):
         self.__angle = angle
@@ -160,10 +170,32 @@ class UniformScale2D(ITransform2D):
         return vec2d * self.__scale
 
 
+class Lorentz2D(ITransform2D):
+    def __init__(self, rapidity: float):
+        self.__rapidity = rapidity
+        self.__matrix = make_lorentz_rotation_matrix2d(rapidity)
+
+    def __mul__(self, other: ITransform2D) -> ITransform2D:
+        if isinstance(other, Lorentz2D):
+            return Lorentz2D(self.__rapidity + other.__rapidity)
+        else:
+            return super().__mul__(other)
+
+    def inv(self) -> ITransform2D:
+        return Lorentz2D(-self.__rapidity)
+
+    @check_dimension_vec2d
+    def apply(self, vec2d: NumpyArray) -> NumpyArray:
+        return np.matmul(self.__matrix, vec2d)
+
+
 class DummyTransform2D(ITransform2D):
     def __init__(self, identity: int):
         super().__init__()
         self.__identity = identity
+
+    def __str__(self):
+        return str(self.__identity)
 
     @check_dimension_vec2d
     def apply(self, vec2d: np):
@@ -174,9 +206,16 @@ class DummyTransform2D(ITransform2D):
 
 
 def main():
-    v0 = DummyTransform2D(3)
+    v0 = DummyTransform2D(1)
     v1 = DummyTransform2D(2)
+    v2 = DummyTransform2D(3)
     v = v0 * v1
+    print(v0 * v1 * v2)
+    print((v0 * v1 * v2).inv().inv())
+    print((v0 * v1 * v2).inv())
+    print(v2 * v1 * v0)
+    print((v2 * v1 * v0).inv())
+
     # vec2d = np.array([[1, 2, 3], [4, 5, 6]])
     vec2d1 = np.array([[1, 4], [2, 5], [3, 6]])
     # res = v.apply(vec2d1.transpose())

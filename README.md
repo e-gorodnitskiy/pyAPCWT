@@ -6,7 +6,7 @@ To use and install
 
 ## Roadmap:
 - [ ] Implement a set of 2D transforms and combinations in the most precise manner: rotation, translation, and scale and the Lorentz rotations
-  - [ ] Transforms and unit test for it
+  - [X] Transforms and unit test for it
   - [ ] Plot demo for transform: point & function  
 - [ ] Implement FFT-related helpers, both for 2d and t-x domains
   - [ ] transforms, inverse, frequencies, unit tests 

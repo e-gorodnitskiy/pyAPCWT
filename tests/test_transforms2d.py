@@ -189,5 +189,72 @@ class TestUniformScale2d(unittest.TestCase):
         self.assertTrue((vec2d_vectorized_expected == vec2d_vectorized_res).all())
 
 
+class TestLorentz2d(unittest.TestCase):
+    def test_neutral(self):
+        vec2d = np.array([1, 4]).reshape((2, 1))
+        neutral_rotation = transforms2d.Lorentz2D(0)
+        neutral_result = neutral_rotation(vec2d)
+        self.assertTrue((vec2d == neutral_result).all())
+
+    def test_compose(self):
+        vec2d = np.array([1.5, -0.625]).reshape(2, -1)
+
+        t1 = transforms2d.Lorentz2D(2.5)
+        t2 = transforms2d.Lorentz2D(-2.5)
+
+        t = t1 * t2
+        neutral_result = t(vec2d)
+        self.assertTrue((vec2d == neutral_result).all())
+
+        t2 = transforms2d.Lorentz2D(1)
+
+        vl = (t1 * t2).apply(vec2d)
+        vr = (t2 * t1).apply(vec2d)
+
+        self.assertTrue((vl == vr).all())
+
+    def test_inv(self):
+        # pseudoscalar dot product is t1 * t2 - x1 * x2
+        vecs2d = np.array([[2.5, 1.125], [1.125, 2.5, ]])
+
+        t = transforms2d.Lorentz2D(0.5)
+        t_inv = t.inv()
+
+        i2t = (t_inv * t).apply(vecs2d)
+        t2i = (t * t_inv).apply(vecs2d)
+        self.assertTrue((i2t == t2i).all())
+        self.assertTrue((i2t == vecs2d).all())
+
+    def test_apply(self):
+        vec2d_vectorized = np.array([
+            [2.5, 1.125],  # D1
+            [-2.5, -1.125],  # D2
+            [1.125, 2.5],  # D3
+            [-1.125, -2.5]  # D4
+        ]).transpose()
+
+        t = transforms2d.Lorentz2D(-1)
+
+        expected_intervals2 = np.square(vec2d_vectorized[0, :]) - np.square(vec2d_vectorized[1, :])
+
+        vec2d_vectorized_res = t.apply(vec2d_vectorized)
+        intervals2 = np.square(vec2d_vectorized_res[0, :]) - np.square(vec2d_vectorized_res[1, :])
+
+        self.assertTrue(np.allclose(expected_intervals2, intervals2, EPSILON_FOR_EXACT_FP64, EPSILON_FOR_EXACT_FP64))
+
+        # check for orthogonality & dot product conservation
+        for i in range(0, 4):
+            for j in range(0, 4):
+                v0 = vec2d_vectorized[:, i:i + 1]
+                v1 = vec2d_vectorized[:, j:j + 1]
+                product_expected = v0[0] * v1[0] - v0[1] * v1[1]
+
+                v0t = vec2d_vectorized_res[:, i:i + 1]
+                v1t = vec2d_vectorized_res[:, j:j + 1]
+
+                product_transformed = v0t[0] * v1t[0] - v0t[1] * v1t[1]
+                self.assertTrue(np.allclose(product_expected, product_transformed, EPSILON_FOR_EXACT_FP64, EPSILON_FOR_EXACT_FP64))
+
+
 if __name__ == '__main__':
     unittest.main()
