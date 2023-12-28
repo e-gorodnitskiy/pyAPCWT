@@ -11,7 +11,7 @@ To use and install
 - [ ] Implement FFT-related helpers, both for 2d and t-x domains
   - [ ] transforms, inverse, frequencies, unit tests 
   - [ ] Demo for transforms in the FFT  
-- [ ] Implement basic mother wavelets(including Fourier domain): Mexican, vanilla Morlet(Ricker), exact Morlet, and Morlet with correction factor, Gaussian wave packet
+- [ ] Implement basic mother wavelets(including Fourier domain): Mexican(Ricker), vanilla Morlet, exact Morlet, and Morlet with correction factor, Gaussian wave packet
   - [ ]  
 - [ ] Implement usual CWT and APCWT with the inversion
 - [ ] Build and implement a tight frame for the APCWT

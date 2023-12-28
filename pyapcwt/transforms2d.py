@@ -1,21 +1,12 @@
+"""
+Module contains definitions of the 2D transforms
+"""
+
 from abc import ABC, abstractmethod
 from typing import List, Callable, Any
-
 import numpy as np
-import numpy.typing as npt
 
-NumpyArray = npt.NDArray[np.float64 | np.float32]
-
-
-# todo: move to some designated utils module
-def check_dimension_vec2d(f: Callable[[Any, NumpyArray], Any]):
-    def checked(obj: Any, vec2d: NumpyArray):
-        assert vec2d.ndim == 2
-        assert vec2d.shape[0] == 2
-
-        return f(obj, vec2d)
-
-    return checked
+from pyapcwt.types import *
 
 
 class ITransform2D(ABC):
@@ -45,7 +36,7 @@ class BasicChainedTransform2D(ITransform2D):
         return str([str(t) for t in self.__transforms])
 
     @check_dimension_vec2d
-    def apply(self, vec2d: np.ndarray) -> np.ndarray:
+    def apply(self, vec2d: NumpyArray) -> NumpyArray:
         res = vec2d.copy()
         for transform in self.__transforms:
             res = transform.apply(res)
@@ -81,7 +72,7 @@ class LinearTransform2D(ITransform2D):
         self.__matrix2d = matrix
 
     @check_dimension_vec2d
-    def apply(self, vec2d: np.ndarray) -> np.ndarray:
+    def apply(self, vec2d: NumpyArray) -> np.ndarray:
         return np.matmul(self.__matrix2d, vec2d.reshape((2, -1))) + self.__translation
 
     def inv(self) -> ITransform2D:
