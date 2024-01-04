@@ -1,5 +1,5 @@
 # pyAPCWT
-Python implementation of the Affine Poincare Continuous wavelet transform and related staff. It is designed more for research and play-around than for performant computations. 
+Python implementation of the Affine Poincare Continuous Wavelet Transform and related staff. It is designed more for research and play-around than for performant computations. 
 
 To use and install
 `conda env create -n <YOUR_NEW_ENVIRONMENT_NAME> -f environment.yml`
