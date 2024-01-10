@@ -105,7 +105,7 @@ def make_lorentz_rotation_matrix2d(rapidity: float) -> NumpyArray:
 
 
 class Rotation2D(ITransform2D):
-    def __init__(self, angle: float):
+    def __init__(self, angle: float) -> None:
         self.__angle = angle
         self.__matrix = make_rotation_matrix2d(angle)
 
