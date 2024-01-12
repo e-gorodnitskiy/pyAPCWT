@@ -11,7 +11,6 @@ This file builds contour plots for the following variants of all 6 possible comb
 in space and Fourier domains.
 """
 
-
 import plotly.graph_objects as go
 import pyapcwt.transforms2d as t2d
 import pyapcwt.wavelets as wav
@@ -21,8 +20,8 @@ from plotly.subplots import make_subplots
 
 def main():
     dilation: t2d.ITransform2D = t2d.UniformScale2D(2)
-    rotation: t2d.ITransform2D = t2d.Rotation2D(np.pi / 6)
-    translation: t2d.ITransform2D = t2d.Translation2D(np.array([3,0]).reshape((2,1)))
+    rotation: t2d.ITransform2D = t2d.Rotation2D(np.pi / 3)
+    translation: t2d.ITransform2D = t2d.Translation2D(np.array([5, 0]).reshape((2, 1)))
 
     transforms = [
         ("TDR", translation * dilation * rotation),
@@ -37,30 +36,38 @@ def main():
         rows=2, cols=3,
         subplot_titles=tuple([name for name, _ in transforms]))
 
-    sz = 1;
-    xs = np.linspace(-10 * sz, 10 * sz, 201)
-    ys = np.linspace(-10 * sz, 10 * sz, 201)
+    d = 1
+    xmin = -5
+    ymin = -5
+    sz = 20
+    xs = np.linspace(xmin, xmin + sz * d, 201)
+    ys = np.linspace(ymin, ymin + sz * d, 201)
 
     xv, yv = np.meshgrid(xs, ys)
 
     vec = np.stack([xv.flatten(), yv.flatten()])
 
-    paramMorlet = wav.MorletParam(sigma_par=1.25, sigma_perp=.8, k0=5)
-    psi = lambda v: np.real(wav.morlet2d(paramMorlet, v))
+    paramMorlet = wav.MorletParam(sigma_par=0.5, sigma_perp=2, k0=5)
+    psi = lambda v: np.abs(wav.morlet2d(paramMorlet, v))
 
     values0 = np.reshape(psi(vec), xv.shape)
+    # fig.update_layout(autosize=False, height=600, width=600)
 
-    for idx,(transform_name, transform) in enumerate(transforms):
+    for idx, (transform_name, transform) in enumerate(transforms):
         act: t2d.ITransform2D = transform.inv()
         vec_t = act.apply(vec)
-        values = np.reshape(np.real(psi(vec_t)), xv.shape)
+        values = np.reshape(psi(vec_t), xv.shape) + np.reshape(psi(vec), xv.shape)
+        layout_kwargs = {f"yaxis{idx + 1}_scaleanchor": f"x{idx + 1}"}
+        fig.update_layout(**layout_kwargs)
 
-        fig.add_trace(go.Contour(
+        cnt = go.Contour(
+
             x=xs,
             y=ys,
             z=values,
-        ), row= idx // 3 + 1, col=idx%3 +1  )
+        )
 
+        fig.add_trace(cnt, row=idx // 3 + 1, col=idx % 3 + 1)
 
     fig.show(renderer="firefox")
 
