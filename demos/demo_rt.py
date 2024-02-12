@@ -7,7 +7,7 @@ translation T: s(r) -> s(r-r_s)
 dilation   D: s(r) -> a^{-1} s(r/a)
 rotation s(r) -> s(R^{-1} r), R \in SO(2).
 (TDR)^{-1} = R^{-1} D^{-1} T{-1}
-This file builds contour plots for the following variants of all 6 possible combinations for usual and Lorentz rotation
+This file builds contour plots for the following variants of all 6 possible combinations for usual rotation
 in space and Fourier domains.
 """
 
@@ -18,7 +18,7 @@ import numpy as np
 from plotly.subplots import make_subplots
 
 
-def main():
+def demo_similitude_with_morlet() -> None:
     dilation: t2d.ITransform2D = t2d.UniformScale2D(2)
     rotation: t2d.ITransform2D = t2d.Rotation2D(np.pi / 3)
     translation: t2d.ITransform2D = t2d.Translation2D(np.array([5, 0]).reshape((2, 1)))
@@ -70,6 +70,10 @@ def main():
         fig.add_trace(cnt, row=idx // 3 + 1, col=idx % 3 + 1)
 
     fig.show(renderer="firefox")
+
+
+def main():
+    demo_similitude_with_morlet()
 
 
 if __name__ == "__main__":

@@ -118,6 +118,7 @@ class Rotation2D(ITransform2D):
     def inv(self):
         return Rotation2D(-self.__angle)
 
+    @check_dimension_vec2d
     def apply(self, vec2d: NumpyArray) -> NumpyArray:
         return np.matmul(self.__matrix, vec2d)
 
